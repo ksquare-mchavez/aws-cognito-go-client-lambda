@@ -123,8 +123,8 @@ func respondChallengeHandler(c *fiber.Ctx) error {
 
 func main() {
 	app := fiber.New()
-	app.Post("/initiate-auth", initiateAuthHandler)
-	app.Post("/respond-challenge", respondChallengeHandler)
+	app.Post("/login", initiateAuthHandler)
+	app.Post("/verify-code", respondChallengeHandler)
 	log.Println("Fiber server started on :8080")
 	log.Fatal(app.Listen(":8080"))
 }
