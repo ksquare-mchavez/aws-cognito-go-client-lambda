@@ -1,0 +1,17 @@
+import logging
+
+# Initialize the logger
+logger = logging.getLogger()
+logger.setLevel("INFO")
+
+def lambda_handler(event, context):
+    try:
+        expected = event['request']['privateChallengeParameters']['answer']
+        provided = event['request']['challengeAnswer']
+        logger.info(f"Successfully verified challenge answer for expected: {expected}, provided: {provided}")
+        event['response']['answerCorrect'] = (provided == expected)
+    except Exception as e:
+        event['response']['answerCorrect'] = False
+        event['response']['error'] = str(e)
+        logger.error(f"Error occurred: {e}")
+    return event

@@ -1,0 +1,43 @@
+import random
+import logging
+import boto3
+
+# Initialize the SES client outside of the handler
+ses = boto3.client('ses')
+
+# Initialize the logger
+logger = logging.getLogger()
+logger.setLevel("INFO")
+
+def lambda_handler(event, context):
+    if event['triggerSource'] == 'CreateAuthChallenge_Authentication':
+        code = str(random.randint(100000, 999999))
+        email = event['request']['userAttributes']['email']
+        userName = event['userName']
+        event['response']['publicChallengeParameters'] = {'email': email}
+        event['response']['privateChallengeParameters'] = {'answer': code}
+        event['response']['challengeMetadata'] = 'OTP_CHALLENGE'
+        logger.info(f"RequestId: {context.aws_request_id} - Preparing to send OTP to {userName} at {email} with [code: {code}]")
+
+        # Simple email validation
+        if not (isinstance(email, str) and '@' in email and email.split('@')[1]):
+            logger.error(f"Invalid email address: {email}")
+            raise ValueError(f"Invalid email address: {email}")
+
+        # Example: send via SES or SNS
+        ses = boto3.client('ses')
+        try:
+            ses.send_email(
+                Source='miguel.chavez@theksquaregroup.com',
+                Destination={'ToAddresses': [email]},
+                Message={
+                    'Subject': {'Data': 'Your OTP Code'},
+                    'Body': {'Text': {'Data': f'Your OTP code is {code}'}}
+                }
+            )
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            logger.error(f"[{context.aws_request_id}] Error sending email: {str(e)}")
+            raise
+        logger.info(f"[{context.aws_request_id}] Successfully sent OTP to {email}")
+    return event

@@ -40,7 +40,10 @@ type RespondChallengeRequest struct {
 }
 
 type RespondChallengeResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
+	IdToken      string `json:"id_token"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
 }
 
 func getCognitoClient() (*cognitoidentityprovider.Client, string, string) {
@@ -109,7 +112,10 @@ func respondChallengeHandler(c *fiber.Ctx) error {
 	}
 
 	result := RespondChallengeResponse{
-		AccessToken: *resp.AuthenticationResult.AccessToken,
+		AccessToken:  *resp.AuthenticationResult.AccessToken,
+		IdToken:      *resp.AuthenticationResult.IdToken,
+		RefreshToken: *resp.AuthenticationResult.RefreshToken,
+		TokenType:    *resp.AuthenticationResult.TokenType,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(result)
